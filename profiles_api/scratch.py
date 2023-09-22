@@ -44,3 +44,24 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     
     def __str__(self) -> str:
         return self.email
+    
+
+
+    from rest_framework.views import APIView
+    from rest_framework.response import Response
+
+
+    class HelloApiView(APIView):
+        """Test API View"""
+
+        def get(self, request, format=None):
+            """Returns a list of APIView features"""
+
+            an_apiview = [
+                'User http methods as function (get, post, patch, put, delete)',
+                'Is similar to tradional Django view',
+                'Gives you the most control over your API logic',
+                'Is mapped manually to URL´s'
+            ]
+
+            return Response({'asd': 'Hello World!', 'an_apiview': an_apiview})

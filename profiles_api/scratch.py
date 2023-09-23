@@ -49,10 +49,20 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     from rest_framework.views import APIView
     from rest_framework.response import Response
+    from . import serializers
+    from rest_framework import status
+
+
+    from rest_framework.serializers import serializers
+
+    class HelloSerializer(serializers.Serializer):
+        """"""
+        name = serializers.CharField(max_length=10)
 
 
     class HelloApiView(APIView):
         """Test API View"""
+        serializer_class = serializers.HelloSerializer
 
         def get(self, request, format=None):
             """Returns a list of APIView features"""
@@ -65,3 +75,18 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             ]
 
             return Response({'asd': 'Hello World!', 'an_apiview': an_apiview})
+        
+        def post(self, request):
+            """"""
+
+            serializer = serializer_class(data=request.data)
+
+            if serializer.is_valid():
+                name = serializer.validated_data.get('name')
+                message = f'Hello {name}'
+
+                return Response({'message': message})
+            
+            else:
+                return Response(
+                    serializer.errors, status=status.HTTP_404_BAD_REQUEST)

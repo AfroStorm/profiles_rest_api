@@ -1,92 +1,132 @@
-from django.db import models
-from django.contrib.auth.models import BaseUserManager
-from django.contrib.auth.models import AbstractBaseUser
-from django.contrib.auth.models import PermissionsMixin
+from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework import viewsets
+from rest_framework.response import Response
+from . import serializers
 
 
-class UserProfileManager(BaseUserManager):
-    '''Manager for user profiles'''
+class HelloApiView(APIView):
+    """Testing API View"""
 
-    def create_user(self, email, name, password=None):
-        '''Create a new user profile'''
-        if not email:
-            raise ValueError('The user needs a valid email')
-        
-        email = self.normalze_email(email)
-        user = self.model(email=email, name=name)
+    serializer_class = serializers.HelloSerializer
 
-        user.set_password(password)
-        user.save(using=self.db)
+    def get(self, request, format=None):
 
-        return user
+        an_apiView = [
+            'User http methods as function (get, post, patch, put, delete)',
+            'Is similar to a traditional Django view',
+            'Gives you the most control over your API logic',
+            'Is mapped manually to URL´s'
+        ]
 
+        message = 'Hello'
 
+        return Response({'message': message, 'an_apiView': an_apiView})
 
+    def post(self, request, pk=None):
+        """Creates a hello message"""
 
-class UserProfile(AbstractBaseUser, PermissionsMixin):
-    '''Database model for the user in the system'''
+        serializer = self.serializer_class(data=request.data)
 
-    email = models.EmailField(max_length=255, unique=True)
-    name = models.CharField(max_length=255)
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
+        if serializer.is_valid():
+            name = serializer.validated_data.get('name')
+            message = f'Hello {name}!'
 
-    objects = UserProfileManager()
+            return Response({'message': message})
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['name']
+        else:
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-    def get_full_name(self):
-        return self.name
-    
-    def get_short_name(self):
-        return self.name
-    
-    def __str__(self) -> str:
-        return self.email
-    
+    def put(self, request, pk=None):
+        """Handles updating an object"""
 
+        message = 'PUT'
+        return Response({'method': message})
 
-    from rest_framework.views import APIView
-    from rest_framework.response import Response
-    from . import serializers
-    from rest_framework import status
+    def patch(self, request, pk=None):
+        """Handles partial update of an object"""
 
+        message = 'PATCH'
+        return Response({'message': message})
 
-    from rest_framework.serializers import serializers
+    def delete(self, request, pk=None):
+        """Handles a deletion of an object"""
 
-    class HelloSerializer(serializers.Serializer):
-        """"""
-        name = serializers.CharField(max_length=10)
+        message = 'DELETE'
+        return Response({'message': message})
 
 
-    class HelloApiView(APIView):
-        """Test API View"""
-        serializer_class = serializers.HelloSerializer
+class ApiViewSet(viewsets.ViewSet):
+    """Testing API ViewSet"""
 
-        def get(self, request, format=None):
-            """Returns a list of APIView features"""
+    serializer_class = serializers.HelloSerializer
 
-            an_apiview = [
-                'User http methods as function (get, post, patch, put, delete)',
-                'Is similar to tradional Django view',
-                'Gives you the most control over your API logic',
-                'Is mapped manually to URL´s'
-            ]
+    def list(self, request):
 
-            return Response({'asd': 'Hello World!', 'an_apiview': an_apiview})
-        
-        def post(self, request):
-            """"""
+        an_viewset = [
+            'Uses actions (List, create, retrieve, update, partial_update)',
+            'Automatically maps to URLs using routers',
+            'Provides more functionality with less code',
+        ]
 
-            serializer = serializer_class(data=request.data)
+        message = 'Hello'
 
-            if serializer.is_valid():
-                name = serializer.validated_data.get('name')
-                message = f'Hello {name}'
+        return Response({
+            'message': message,
+            'an_viewset': an_viewset
+        })
 
-                return Response({'message': message})
-            
-            else:
-                return Response(
-                    serializer.errors, status=status.HTTP_404_BAD_REQUEST)
+    def create(self, request, pk=None):
+        """Handles creation of an object"""
+
+        serializer = self.serializer_class(data=request.data)
+
+        if serializer.is_valid():
+
+            name = serializer.validated_data.get('name')
+            message = f'Hello {name}!'
+
+            return Response({
+                'message': message
+            })
+
+        else:
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    def retrieve(self, request, pk=None):
+        """Handles getting an object"""
+
+        message = 'GET'
+        return Response({
+            'http_method': message
+        })
+
+    def update(self, request, pk=None):
+        """Handles updating an object"""
+
+        message = 'PUT'
+        return Response({
+            'http_method': message
+        })
+
+    def partial_update(self, request, pk=None):
+        """Handles partially updating an object"""
+
+        message = 'PATCH'
+        return Response({
+            'http_method': message
+        })
+
+    def destroy(self, request, pk=None):
+        """Handles deleting an object"""
+
+        message = 'DELETE'
+        return Response({
+            'http_method': message
+        })
